@@ -49,24 +49,16 @@ class Chat::BudgetQueryService
     :today
   end
 
-  def period_range
-    case period
-    when :yesterday
-      Time.current.yesterday.beginning_of_day..Time.current.yesterday.end_of_day
-    else
-      Time.current.beginning_of_day..Time.current.end_of_day
-    end
-  end
-
   def status
     return "aprovado" if message.include?("aprovado") || message.include?("aprovados")
     return "aberto" if message.include?("aberto") || message.include?("abertos")
   end
 
   def filtered_budgets
-    budgets = Budget.where(created_at: period_range)
-    budgets = budgets.where(status: status) if status.present?
-    budgets
+    Retrievers::BudgetRetriever.new(
+      period: period,
+      status: status
+    ).call
   end
 
   def mentions_workshop_ranking?
