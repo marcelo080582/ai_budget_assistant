@@ -6,33 +6,12 @@ class Chat::BudgetQueryService
   def call
     return unknown_question unless action
 
-    budgets = filtered_budgets
-
-    case action
-    when :count
-      "Foram encontrados #{budgets.count} orçamento(s) #{status_label}#{period_label}."
-    when :sum
-      total = budgets.sum(:total_value)
-      "O valor total dos orçamentos #{status_label}#{period_label} é R$ #{format('%.2f', total)}."
-    when :average
-      average = budgets.average(:total_value)
-      return no_budgets_message if average.blank?
-
-      "O valor médio dos orçamentos #{status_label}#{period_label} é R$ #{format('%.2f', average)}."
-    when :list
-      return no_budgets_message if budgets.none?
-
-      codes = budgets.limit(10).pluck(:code).join(", ")
-      "Os orçamentos #{status_label}#{period_label} são: #{codes}."
-    when :top_workshop
-      result = budgets.group(:workshop_name).count.max_by { |_workshop, total| total }
-      return no_budgets_message if result.blank?
-
-      workshop, total = result
-      "#{workshop} foi a oficina com mais orçamentos #{status_label}#{period_label}, com #{total} orçamento(s)."
-    else
-      unknown_question
-    end
+    Responders::BudgetResponder.new(
+      action: action,
+      budgets: filtered_budgets,
+      status: status,
+      period: period
+    ).call
   end
 
   private
@@ -43,25 +22,7 @@ class Chat::BudgetQueryService
     "Ainda não sei responder essa pergunta."
   end
 
-  def period
-    return :yesterday if message.include?("ontem")
-
-    :today
-  end
-
-  def status
-    return "aprovado" if message.include?("aprovado") || message.include?("aprovados")
-    return "aberto" if message.include?("aberto") || message.include?("abertos")
-  end
-
-  def filtered_budgets
-    Retrievers::BudgetRetriever.new(
-      period: period,
-      status: status
-    ).call
-  end
-
-  def mentions_workshop_ranking?
+    def mentions_workshop_ranking?
     message.include?("qual oficina teve mais orçamentos") ||
       (message.include?("oficina") && message.include?("mais orçamentos"))
   end
@@ -99,17 +60,21 @@ class Chat::BudgetQueryService
     return :count if mentions_count?
   end
 
-  def status_label
-    return "" if status.blank?
-
-    "#{status}s "
+  def status
+    return "aprovado" if message.include?("aprovado") || message.include?("aprovados")
+    return "aberto" if message.include?("aberto") || message.include?("abertos")
   end
 
-  def period_label
-    period == :yesterday ? "de ontem" : "de hoje"
+  def period
+    return :yesterday if message.include?("ontem")
+
+    :today
   end
 
-  def no_budgets_message
-    "Nenhum orçamento #{status_label}foi encontrado #{period == :yesterday ? 'ontem' : 'hoje'}."
+  def filtered_budgets
+    Retrievers::BudgetRetriever.new(
+      period: period,
+      status: status
+    ).call
   end
 end
