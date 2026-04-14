@@ -6,9 +6,12 @@ class Chat::BudgetQueryService
   def call
     return unknown_question unless action
 
+    budgets = filtered_budgets
+    context = ContextBuilders::BudgetContextBuilder.new(budgets).call
+
     Responders::BudgetResponder.new(
       action: action,
-      budgets: filtered_budgets,
+      context: context,
       status: status,
       period: period
     ).call
