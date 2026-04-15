@@ -9,6 +9,13 @@ class Chat::BudgetQueryService
     budgets = filtered_budgets
     context = ContextBuilders::BudgetContextBuilder.new(budgets).call
 
+    prompt = PromptBuilders::BudgetPromptBuilder.new(
+      message: message,
+      context: context
+    ).call
+
+    Rails.logger.info(prompt)
+
     Responders::BudgetResponder.new(
       action: action,
       context: context,
