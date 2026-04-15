@@ -14,14 +14,7 @@ class Chat::BudgetQueryService
       context: context
     ).call
 
-    Rails.logger.info(prompt)
-
-    Responders::BudgetResponder.new(
-      action: action,
-      context: context,
-      status: status,
-      period: period
-    ).call
+    Llm::FakeClient.new(prompt: prompt).call
   end
 
   private
