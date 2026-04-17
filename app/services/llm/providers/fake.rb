@@ -1,4 +1,4 @@
-class Llm::FakeClient
+class Llm::Providers::Fake
   def initialize(prompt:)
     @prompt = prompt
   end

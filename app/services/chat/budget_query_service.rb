@@ -14,7 +14,7 @@ class Chat::BudgetQueryService
       context: context
     ).call
 
-    Llm::FakeClient.new(prompt: prompt).call
+    Llm::Client.new(prompt: prompt).call
   end
 
   private

@@ -1,0 +1,16 @@
+default: &default
+  adapter: postgresql
+  encoding: unicode
+  username: postgres
+  password:
+  host: localhost
+  pool: 5
+  max_connections: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+
+development:
+  <<: *default
+  database: ai_budget_assistant_development
+
+test:
+  <<: *default
+  database: ai_budget_assistant_test
