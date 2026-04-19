@@ -5,10 +5,10 @@ class ContextBuilders::BudgetContextBuilder
 
   def call
     {
-      count: budgets.count,
-      total_value: budgets.sum(:total_value),
+      count: Tools::CountBudgets.new(budgets: budgets).call,
+      total_value: Tools::SumBudgetValues.new(budgets: budgets).call,
       average_value: budgets.average(:total_value),
-      codes: budgets.limit(10).pluck(:code),
+      codes: Tools::ListBudgets.new(budgets: budgets).call,
       top_workshop: top_workshop_data
     }
   end
